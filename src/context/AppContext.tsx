@@ -11,9 +11,11 @@ import type {
   CyclePeriod,
   UserSettings,
   PressureForecast,
+  WeatherData,
 } from '../types';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { usePressure } from '../hooks/usePressure';
+import { useWeather } from '../hooks/useWeather';
 import { generateId } from '../utils/id';
 import { getCyclePhase } from '../services/cycleCalculations';
 import { toDateString } from '../utils/dateUtils';
@@ -41,6 +43,7 @@ interface AppContextValue {
   settings: UserSettings;
   pressure: PressureForecast | null;
   pressureLoading: boolean;
+  weather: WeatherData | null;
   syncStatus: 'disconnected' | 'connected' | 'syncing' | 'error';
   addHeadache: (severity: number, notes?: string, timestamp?: number) => void;
   deleteHeadache: (id: string) => void;
@@ -67,6 +70,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     settings.latitude,
     settings.longitude
   );
+  const { weather } = useWeather(settings.latitude, settings.longitude);
 
   const unsubRef = useRef<(() => void) | null>(null);
   const pushTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -280,6 +284,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     settings,
     pressure,
     pressureLoading,
+    weather,
     syncStatus,
     addHeadache,
     deleteHeadache,

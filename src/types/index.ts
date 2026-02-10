@@ -32,6 +32,27 @@ export interface PressureForecast {
   fetchedAt: number;
 }
 
+export interface WeatherCurrent {
+  temperature: number;
+  humidity: number;
+  weatherCode: number;
+}
+
+export interface WeatherDaily {
+  date: string;
+  dayName: string;
+  weatherCode: number;
+  tempMax: number;
+  tempMin: number;
+  precipProbability: number;
+}
+
+export interface WeatherData {
+  current: WeatherCurrent;
+  daily: WeatherDaily[];
+  fetchedAt: number;
+}
+
 export interface UserSettings {
   syncCode: string | null;
   latitude: number | null;

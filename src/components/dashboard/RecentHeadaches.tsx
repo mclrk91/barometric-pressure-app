@@ -1,3 +1,4 @@
+import type { HeadacheEntry } from '../../types'
 import { useApp } from '../../context/AppContext'
 import { formatDateTime } from '../../utils/dateUtils'
 
@@ -7,43 +8,53 @@ function severityColor(val: number): string {
   return '#e74c3c'
 }
 
-export default function RecentHeadaches() {
-  const { headaches } = useApp()
+export default function RecentHeadaches({ headaches }: { headaches: HeadacheEntry[] }) {
+  const { deleteHeadache } = useApp()
 
-  const recent = [...headaches]
-    .sort((a, b) => b.timestamp - a.timestamp)
-    .slice(0, 5)
+  const sorted = [...headaches].sort((a, b) => b.timestamp - a.timestamp)
 
-  if (recent.length === 0) {
-    return (
-      <div className="card">
-        <div className="card-title">Recent Headaches</div>
-        <div className="empty-state">
-          <p>No headaches logged yet. Use the + button to log one.</p>
-        </div>
-      </div>
-    )
+  function handleClearAll() {
+    if (confirm('Clear all headache entries?')) {
+      for (const h of headaches) {
+        deleteHeadache(h.id)
+      }
+    }
   }
 
   return (
     <div className="card">
-      <div className="card-title">Recent Headaches</div>
-      {recent.map((h) => (
-        <div key={h.id} className="list-item">
-          <span
-            className="severity-badge"
-            style={{ background: severityColor(h.severity) }}
-          >
-            {h.severity}
-          </span>
-          <div className="list-item-content">
-            <div className="list-item-title">{formatDateTime(h.timestamp)}</div>
-            {h.notes && (
-              <div className="list-item-sub">{h.notes}</div>
-            )}
-          </div>
+      <div className="history-header">
+        <div className="card-title" style={{ marginBottom: 0 }}>Recent Entries</div>
+        {sorted.length > 0 && (
+          <button className="clear-all" onClick={handleClearAll}>Clear All</button>
+        )}
+      </div>
+
+      {sorted.length === 0 ? (
+        <div className="empty-state">
+          <p style={{ color: 'var(--text-muted)' }}>No headaches logged yet</p>
         </div>
-      ))}
+      ) : (
+        sorted.slice(0, 10).map((h) => (
+          <div key={h.id} className="list-item">
+            <span className="severity-badge" style={{ background: severityColor(h.severity) }}>
+              {h.severity}
+            </span>
+            <div className="list-item-content">
+              <div className="list-item-title">{formatDateTime(h.timestamp)}</div>
+              <div className="list-item-sub">
+                {h.notes && <>{h.notes} &middot; </>}
+                {h.cyclePhase && <>Cycle: {h.cyclePhase} &middot; </>}
+                {h.pressureAtTime && <>{(h.pressureAtTime * 0.02953).toFixed(2)} inHg</>}
+              </div>
+            </div>
+            <button className="btn btn-sm btn-outline" onClick={() => deleteHeadache(h.id)}
+              style={{ color: 'var(--red)', flexShrink: 0 }}>
+              &times;
+            </button>
+          </div>
+        ))
+      )}
     </div>
   )
 }
